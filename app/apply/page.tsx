@@ -69,8 +69,7 @@ export default function ApplyPage() {
     );
 
     const orgName = 'organization' in item ? item.organization :
-                    'ministry' in item ? item.ministry :
-                    'organization' in item ? item.organization : '';
+                    'ministry' in item ? item.ministry : '';
 
     const newApp: Application = {
       id: `app-${Date.now()}`,
