@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { supabase, isSupabaseConnected } from "@/lib/supabase";
-import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { getCurrentUser } from "@/lib/mockData";
 import {
   Menu,
@@ -50,7 +49,7 @@ export default function Navbar() {
 
     if (isSupabaseConnected()) {
       const { data: listener } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
+        async (event: AuthChangeEvent, session: Session | null) => {
           if (session?.user) {
             setUser(session.user);
             const { data } = await supabase
