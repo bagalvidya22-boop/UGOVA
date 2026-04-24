@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { supabase, isSupabaseConnected } from "@/lib/supabase";
-import { getCurrentUser } from "@/lib/mockData";
 import type { Session } from "@supabase/supabase-js";
+import { getCurrentUser } from "@/lib/mockData";
 import {
   Menu,
   X,
