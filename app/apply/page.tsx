@@ -15,7 +15,7 @@ import {
   Shield,
   Loader2,
 } from "lucide-react";
-import { mockJobs, mockSchemes, mockExams, getCurrentUser, Application } from "@/lib/mockData";
+import { mockJobs, mockSchemes, mockExams, getCurrentUser, Application, type Job, type Scheme, type Exam } from "@/lib/mockData";
 import { sendApplicationEmail } from "@/lib/mailService";
 
 export default function ApplyPage() {
@@ -27,19 +27,49 @@ export default function ApplyPage() {
   const type = searchParams.get("type") as 'job' | 'scheme' | 'exam';
   const id = searchParams.get("id");
 
-  const item = type === 'job'
-    ? mockJobs.find(j => j.id === id)
-    : type === 'scheme'
-    ? mockSchemes.find(s => s.id === id)
-    : mockExams.find(e => e.id === id);
+  // Type-safe item resolution
+  let foundItem: Job | Scheme | Exam | undefined;
+  let orgName = '';
+  let applyLink = '#';
+  let lastDate = '';
+  let itemTitle = '';
+
+  if (type === 'job') {
+    const job = mockJobs.find(j => j.id === id);
+    if (job) {
+      foundItem = job;
+      orgName = job.organization;
+      applyLink = job.applyLink;
+      lastDate = job.lastDate;
+      itemTitle = job.title;
+    }
+  } else if (type === 'scheme') {
+    const scheme = mockSchemes.find(s => s.id === id);
+    if (scheme) {
+      foundItem = scheme;
+      orgName = scheme.ministry;
+      applyLink = scheme.applyLink;
+      lastDate = scheme.lastDate;
+      itemTitle = scheme.title;
+    }
+  } else if (type === 'exam') {
+    const exam = mockExams.find(e => e.id === id);
+    if (exam) {
+      foundItem = exam;
+      orgName = exam.organization;
+      applyLink = exam.applyLink;
+      lastDate = exam.lastDate;
+      itemTitle = exam.title;
+    }
+  }
 
   useEffect(() => {
-    if (!item) {
+    if (!foundItem) {
       toast.error("Invalid application");
     }
-  }, [item]);
+  }, [foundItem]);
 
-  if (!item) {
+  if (!foundItem) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
@@ -68,19 +98,16 @@ export default function ApplyPage() {
       localStorage.getItem('ugova_applications') || '[]'
     );
 
-    const orgName = 'organization' in item ? item.organization :
-                    'ministry' in item ? item.ministry : '';
-
     const newApp: Application = {
       id: `app-${Date.now()}`,
       userId: user.id,
       type,
-      itemId: item.id,
-      title: item.title,
+      itemId: foundItem!.id,
+      title: itemTitle,
       organization: orgName,
       appliedDate: new Date().toISOString().split('T')[0],
       status: 'applied',
-      lastDate: 'lastDate' in item ? item.lastDate : '',
+      lastDate,
     };
 
     applications.push(newApp);
@@ -89,17 +116,14 @@ export default function ApplyPage() {
     // Track in type-specific storage
     const key = `ugova_applied_${type}s`;
     const existing = JSON.parse(localStorage.getItem(key) || '[]');
-    existing.push(item.id);
+    existing.push(foundItem!.id);
     localStorage.setItem(key, JSON.stringify(existing));
 
     // Send email
-    const applyLink = 'applyLink' in item ? item.applyLink : '#';
-    const lastDate = 'lastDate' in item ? item.lastDate : '';
-
     await sendApplicationEmail(
       user.email,
       user.name,
-      item.title,
+      itemTitle,
       orgName,
       type,
       lastDate,
@@ -110,11 +134,6 @@ export default function ApplyPage() {
     setIsApplying(false);
     toast.success("Application saved successfully!");
   };
-
-  const applyLink = 'applyLink' in item ? item.applyLink : '#';
-  const lastDate = 'lastDate' in item ? item.lastDate : '';
-  const orgName = 'organization' in item ? item.organization :
-                  'ministry' in item ? item.ministry : '';
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -137,7 +156,7 @@ export default function ApplyPage() {
                 {type === 'scheme' && <FileText className="w-8 h-8 text-green-600" />}
                 {type === 'exam' && <GraduationCap className="w-8 h-8 text-purple-600" />}
               </div>
-              <h1 className="text-2xl font-bold text-slate-900">Apply for {item.title}</h1>
+              <h1 className="text-2xl font-bold text-slate-900">Apply for {itemTitle}</h1>
               <p className="text-slate-500 mt-1">{orgName}</p>
             </div>
 
@@ -216,7 +235,7 @@ export default function ApplyPage() {
             </div>
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Application Saved!</h2>
             <p className="text-slate-500 mb-6">
-              {item.title} has been saved to your dashboard. A confirmation email has been sent.
+              {itemTitle} has been saved to your dashboard. A confirmation email has been sent.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
