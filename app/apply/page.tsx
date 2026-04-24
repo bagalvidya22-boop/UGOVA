@@ -1,31 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import toast from "react-hot-toast";
-import { motion } from "framer-motion";
-import {
-  CheckCircle,
-  ExternalLink,
-  ArrowLeft,
-  FileText,
-  Briefcase,
-  GraduationCap,
-  Shield,
-  Loader2,
-} from "lucide-react";
-import { mockJobs, mockSchemes, mockExams, getCurrentUser, Application, type Job, type Scheme, type Exam } from "@/lib/mockData";
-import { sendApplicationEmail } from "@/lib/mailService";
+import { Suspense } from "react";
+import ApplyPageContent from "./ApplyPageContent";
 
 export default function ApplyPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [isApplying, setIsApplying] = useState(false);
-  const [isComplete, setIsComplete] = useState(false);
-
-  const type = searchParams.get("type") as 'job' | 'scheme' | 'exam';
-  const id = searchParams.get("id");
+  return (
+    <Suspense fallback={<div className="min-h-[60vh] flex items-center justify-center"><div className="w-8 h-8 border-4 border-ugova-600 border-t-transparent rounded-full animate-spin" /></div>}>
+      <ApplyPageContent />
+    </Suspense>
+  );
+}
 
   // Type-safe item resolution
   let foundItem: Job | Scheme | Exam | undefined;
