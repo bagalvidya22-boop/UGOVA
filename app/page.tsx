@@ -150,7 +150,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-3 divide-x divide-slate-100">
             <div className="text-center px-4">
-              <div className="text-3xl font-bold text-ugova-700">{stats.jps}00+</div>
+              <div className="text-3xl font-bold text-ugova-700">{stats.jobs}00+</div>
               <div className="text-sm text-slate-500 mt-1">Government Jobs</div>
             </div>
             <div className="text-center px-4">
