@@ -27,11 +27,36 @@ export default function ApplyPage() {
   const type = searchParams.get("type") as 'job' | 'scheme' | 'exam';
   const id = searchParams.get("id");
 
-  const item = type === 'job'
-    ? mockJobs.find(j => j.id === id)
-    : type === 'scheme'
-    ? mockSchemes.find(s => s.id === id)
-    : mockExams.find(e => e.id === id);
+  let item: Job | Scheme | Exam | undefined;
+  let orgName = '';
+  let applyLink = '#';
+  let lastDate = '';
+
+  if (type === 'job') {
+    const found = mockJobs.find(j => j.id === id);
+    if (found) {
+      item = found;
+      orgName = found.organization;
+      applyLink = found.applyLink;
+      lastDate = found.lastDate;
+    }
+  } else if (type === 'scheme') {
+    const found = mockSchemes.find(s => s.id === id);
+    if (found) {
+      item = found;
+      orgName = found.ministry;
+      applyLink = found.applyLink;
+      lastDate = found.lastDate;
+    }
+  } else if (type === 'exam') {
+    const found = mockExams.find(e => e.id === id);
+    if (found) {
+      item = found;
+      orgName = found.organization;
+      applyLink = found.applyLink;
+      lastDate = found.lastDate;
+    }
+  }
 
   useEffect(() => {
     if (!item) {
@@ -68,9 +93,6 @@ export default function ApplyPage() {
       localStorage.getItem('ugova_applications') || '[]'
     );
 
-    const orgName = 'organization' in item ? item.organization :
-                    'ministry' in item ? item.ministry : '';
-
     const newApp: Application = {
       id: `app-${Date.now()}`,
       userId: user.id,
@@ -80,7 +102,7 @@ export default function ApplyPage() {
       organization: orgName,
       appliedDate: new Date().toISOString().split('T')[0],
       status: 'applied',
-      lastDate: 'lastDate' in item ? item.lastDate : '',
+      lastDate,
     };
 
     applications.push(newApp);
@@ -93,9 +115,6 @@ export default function ApplyPage() {
     localStorage.setItem(key, JSON.stringify(existing));
 
     // Send email
-    const applyLink = 'applyLink' in item ? item.applyLink : '#';
-    const lastDate = 'lastDate' in item ? item.lastDate : '';
-
     await sendApplicationEmail(
       user.email,
       user.name,
@@ -110,11 +129,6 @@ export default function ApplyPage() {
     setIsApplying(false);
     toast.success("Application saved successfully!");
   };
-
-  const applyLink = 'applyLink' in item ? item.applyLink : '#';
-  const lastDate = 'lastDate' in item ? item.lastDate : '';
-  const orgName = 'organization' in item ? item.organization :
-                  'ministry' in item ? item.ministry : '';
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
