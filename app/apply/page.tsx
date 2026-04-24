@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import ApplyContent from "./apply-content";
 
+export const dynamic = "force-dynamic";
+
 export default function ApplyPage() {
   return (
     <Suspense
