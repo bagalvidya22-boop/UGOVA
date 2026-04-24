@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConnected } from "@/lib/supabase";
+import { getCurrentUser } from "@/lib/mockData";
 import {
   Menu,
   X,
@@ -12,11 +13,10 @@ import {
   GraduationCap,
   User,
   LogOut,
-  Bell,
   LayoutDashboard,
   Shield,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import NotificationBell from "./NotificationBell";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,23 +25,8 @@ export default function Navbar() {
 
   useEffect(() => {
     const getUser = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.user) {
-        setUser(session.user);
-        const { data } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", session.user.id)
-          .single();
-        if (data) setRole(data.role);
-      }
-    };
-    getUser();
-
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      if (isSupabaseConnected()) {
+        const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
           setUser(session.user);
           const { data } = await supabase
@@ -50,18 +35,44 @@ export default function Navbar() {
             .eq("id", session.user.id)
             .single();
           if (data) setRole(data.role);
-        } else {
-          setUser(null);
-          setRole("");
+        }
+      } else {
+        // Mock auth fallback
+        const mockUser = getCurrentUser();
+        if (mockUser) {
+          setUser({ id: mockUser.id, email: mockUser.email });
+          setRole(mockUser.role);
         }
       }
-    );
+    };
+    getUser();
 
-    return () => listener.subscription.unsubscribe();
+    if (isSupabaseConnected()) {
+      const { data: listener } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          if (session?.user) {
+            setUser(session.user);
+            const { data } = await supabase
+              .from("profiles")
+              .select("role")
+              .eq("id", session.user.id)
+              .single();
+            if (data) setRole(data.role);
+          } else {
+            setUser(null);
+            setRole("");
+          }
+        }
+      );
+      return () => listener.subscription.unsubscribe();
+    }
   }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    if (isSupabaseConnected()) {
+      await supabase.auth.signOut();
+    }
+    localStorage.removeItem('ugova_user');
     window.location.href = "/";
   };
 
