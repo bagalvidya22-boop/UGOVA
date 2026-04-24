@@ -11,7 +11,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 });
 
 export const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  supabaseUrl,
   process.env.SUPABASE_SERVICE_ROLE_KEY || '',
   {
     auth: {
@@ -20,3 +20,8 @@ export const supabaseAdmin = createClient(
     },
   }
 );
+
+// Check if Supabase is connected
+export const isSupabaseConnected = () => {
+  return !!(supabaseUrl && supabaseAnonKey && supabaseUrl !== 'your-supabase-url');
+};
