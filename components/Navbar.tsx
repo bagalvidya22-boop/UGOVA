@@ -49,7 +49,7 @@ export default function Navbar() {
 
     if (isSupabaseConnected()) {
       const { data: listener } = supabase.auth.onAuthStateChange(
-        async (event: string, session: Session | null) => {
+        async (_event, session) => {
           if (session?.user) {
             setUser(session.user);
             const { data } = await supabase
