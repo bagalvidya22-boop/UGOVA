@@ -25,8 +25,23 @@ export default function Navbar() {
 
   useEffect(() => {
     const getUser = async () => {
-      if (isSupabaseConnected()) {
-        const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
+        const { data } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", session.user.id)
+          .single();
+        if (data) setRole(data.role);
+      }
+    };
+    getUser();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
         if (session?.user) {
           setUser(session.user);
           const { data } = await supabase
@@ -35,41 +50,21 @@ export default function Navbar() {
             .eq("id", session.user.id)
             .single();
           if (data) setRole(data.role);
-        }
-      } else {
-        // Mock auth fallback
-        const mockUser = getCurrentUser();
-        if (mockUser) {
-          setUser({ id: mockUser.id, email: mockUser.email } as any);
-          setRole(mockUser.role);
+        } else {
+          setUser(null);
+          setRole("");
         }
       }
-    };
-    getUser();
+    );
 
-    if (isSupabaseConnected()) {
-      const { data: listener } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
-          if (session?.user) {
-            setUser(session.user);
-            const { data } = await supabase
-              .from("profiles")
-              .select("role")
-              .eq("id", session.user.id)
-              .single();
-            if (data) setRole(data.role);
-          } else {
-            setUser(null);
-            setRole("");
-          }
-        }
-      );
-      return () => listener.subscription.unsubscribe();
-    }
+    return () => listener.subscription.unsubscribe();
   }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    if (isSupabaseConnected()) {
+      await supabase.auth.signOut();
+    }
+    localStorage.removeItem('ugova_user');
     window.location.href = "/";
   };
 
