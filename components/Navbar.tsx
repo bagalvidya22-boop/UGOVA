@@ -61,10 +61,7 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = async () => {
-    if (isSupabaseConnected()) {
-      await supabase.auth.signOut();
-    }
-    localStorage.removeItem('ugova_user');
+    await supabase.auth.signOut();
     window.location.href = "/";
   };
 
@@ -104,12 +101,7 @@ export default function Navbar() {
 
             {user ? (
               <div className="flex items-center gap-2 ml-4">
-                <Link
-                  href="/notifications"
-                  className="p-2 rounded-lg text-slate-600 hover:text-ugova-700 hover:bg-ugova-50 transition-colors"
-                >
-                  <Bell className="w-5 h-5" />
-                </Link>
+                <NotificationBell />
                 <div className="relative group">
                   <button className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-ugova-50 transition-colors">
                     <div className="w-8 h-8 bg-ugova-100 rounded-full flex items-center justify-center">
