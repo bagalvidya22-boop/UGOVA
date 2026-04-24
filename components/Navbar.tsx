@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConnected } from "@/lib/supabase";
+import { getCurrentUser } from "@/lib/mockData";
 import {
   Menu,
   X,
@@ -12,11 +13,10 @@ import {
   GraduationCap,
   User,
   LogOut,
-  Bell,
   LayoutDashboard,
   Shield,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import NotificationBell from "./NotificationBell";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
